@@ -6,7 +6,7 @@ if [ ! -s /etc/supervisor/conf.d/damon.conf ]; then
   # 设置 Github CDN 及若干变量，如是 IPv6 only 或者大陆机器，需要 Github 加速网，可自行查找放在 GH_PROXY 处 ，如 https://mirror.ghproxy.com/ ，能不用就不用，减少因加速网导致的故障。
   GH_PROXY='https://ghproxy.lvedong.eu.org/'
   GRPC_PROXY_PORT=${GRPC_PROXY_PORT:-'443'}
-  DASH_VER=${DASH_VER:-'v1.12.4'}
+  DASH_VER=${DASH_VER:-'v1.14.9'}
 
   if [[ "$DASH_VER" =~ ^(v)?0\.[0-9]{1,2}\.[0-9]{1,2}$ ]]; then
     GRPC_PORT=${GRPC_PORT:-'5555'}
@@ -15,10 +15,10 @@ if [ ! -s /etc/supervisor/conf.d/damon.conf ]; then
   else
     GRPC_PORT=${GRPC_PORT:-'8008'}
     WEB_PORT=${WEB_PORT:-'8008'}
-    AGENT_VER=${AGENT_VER:-'v1.12.2'}
+    AGENT_VER=${AGENT_VER:-'v1.14.1'}
   fi
   CADDY_HTTP_PORT=2052
-  PRO_PORT=${PRO_PORT:-'80'}
+  PRO_PORT=${PORT:-'80'}
   WORK_DIR=/dashboard
   IS_UPDATE=${IS_UPDATE:-'yes'}
   # 如不分离备份的 github 账户，默认与哪吒登陆的 github 账户一致
@@ -490,7 +490,7 @@ DASH_VER=$DASH_VER
 EOF
 
     # 生成 restore2.sh 文件的步骤2 - 在线获取 template/2restore.sh 模板生成完整 restore2.sh 文件
-    wget -qO- ${GH_PROXY}https://raw.githubusercontent.com/dsadsadsss/Docker-for-Nezha-Argo-server-v1.x/main/template/restore.sh | sed '1,/^########/d' >> $WORK_DIR/restore2.sh
+    wget -qO- ${GH_PROXY}https://raw.githubusercontent.com/dsadsadsss/Docker-for-Nezha-Argo-server-v1.x/main/template/restore2.sh | sed '1,/^########/d' >> $WORK_DIR/restore2.sh
 # 恢复备份文件
 chmod 777 $WORK_DIR/restore2.sh
 $WORK_DIR/restore2.sh a
@@ -513,7 +513,7 @@ EOF
 
   # 生成定时任务: 1.每天北京时间 3:30:00 更新备份和还原文件，2.每天北京时间 4:00:00 备份一次，并重启 cron 服务； 3.每分钟自动检测在线备份文件里的内容
   [ -z "$NO_AUTO_RENEW" ] && [ -s $WORK_DIR/renew.sh ] && ! grep -q "$WORK_DIR/renew.sh" /etc/crontab && echo "30 3 * * * root bash $WORK_DIR/renew.sh" >> /etc/crontab
-  [ -s $WORK_DIR/backup.sh ] && ! grep -q "$WORK_DIR/backup.sh" /etc/crontab && echo "0 * * * * root bash $WORK_DIR/backup.sh a" >> /etc/crontab
+  [ -s $WORK_DIR/backup.sh ] && ! grep -q "$WORK_DIR/backup.sh" /etc/crontab && echo "0 */2 * * * root bash $WORK_DIR/backup.sh a" >> /etc/crontab
   [ -s $WORK_DIR/update.sh ] && ! grep -q "$WORK_DIR/update.sh" /etc/crontab && echo "0 4 * * * root bash $WORK_DIR/update.sh a" >> /etc/crontab
   [ -z "$NO_RES" ] && [ -s $WORK_DIR/restore.sh ] && ! grep -q "$WORK_DIR/restore.sh" /etc/crontab && echo "* * * * * root bash $WORK_DIR/restore.sh a" >> /etc/crontab
   service cron restart
@@ -544,6 +544,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 
 [program:nezha]
 command=$WORK_DIR/app
@@ -551,6 +552,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 
 [program:agent]
 command=$AG_RUN
@@ -558,6 +560,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 
 [program:argo]
 command=$WORK_DIR/$ARGO_RUN
@@ -565,6 +568,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 EOF
 if [ -n "$API_TOKEN" ] && [ "$API_TOKEN" != "0" ]; then
     cat >> /etc/supervisor/conf.d/damon.conf << EOF
@@ -575,6 +579,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 EOF
 fi
 if [ -n "$UUID" ] && [ "$UUID" != "0" ]; then
@@ -586,6 +591,7 @@ autostart=true
 autorestart=true
 stderr_logfile=/dev/null
 stdout_logfile=/dev/null
+user=root
 EOF
 get_country_code() {
     country_code="UN"
@@ -627,7 +633,8 @@ echo "  "
 echo "=============================="
 fi
   # 赋执行权给 sh 及所有应用
-  chmod +x $WORK_DIR/{cloudflared,app,nezfz,nezha-agent,*.sh}
+  [ -n "$API_TOKEN" ] && chmod +x $WORK_DIR/{cloudflared,app,nezfz,nezha-agent,*.sh}
+  [ -z "$API_TOKEN" ] && chmod +x $WORK_DIR/{cloudflared,app,nezha-agent,*.sh}
 
 fi
 

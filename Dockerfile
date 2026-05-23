@@ -14,4 +14,11 @@ RUN apt-get update &&\
     echo "#!/usr/bin/env bash\n\n\
 bash <(wget -qO- https://raw.githubusercontent.com/dsadsadsss/Docker-for-Nezha-Argo-server-v1.x/main/init.sh)" > entrypoint.sh &&\
     chmod +x entrypoint.sh
+ENV PORT=80
+EXPOSE $PORT
+
+# 启动容器
 ENTRYPOINT ["/dashboard/entrypoint.sh"]
+
+
+

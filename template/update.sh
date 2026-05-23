@@ -23,6 +23,33 @@ error() { echo -e "\033[31m\033[01m$*\033[0m" && exit 1; } # 红色
 info() { echo -e "\033[32m\033[01m$*\033[0m"; }   # 绿色
 hint() { echo -e "\033[33m\033[01m$*\033[0m"; }   # 黄色
 
+#  ========== 检查数据库UUID条数 ==========
+DB_PATH="$WORK_DIR/data/sqlite.db"
+
+# 检查数据库文件是否存在
+if [ ! -f "$DB_PATH" ]; then
+    warning "\n Database file not found: $DB_PATH \n"
+    exit 1
+fi
+
+# 查询UUID条数
+UUID_COUNT=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM servers;" 2>/dev/null)
+
+# 检查查询是否成功
+if [ $? -ne 0 ]; then
+    warning "\n Failed to query database. \n"
+    exit 1
+fi
+
+# 判断条数是否大于等于2
+if [ "$UUID_COUNT" -lt 2 ]; then
+    warning "\n UUID count ($UUID_COUNT) is less than 2. Backup skipped. \n"
+    exit 0
+fi
+
+info "\n UUID count: $UUID_COUNT (>= 2). Proceeding with backup... \n"
+# ========== 检查结束 ==========
+
 cmd_systemctl() {
   local ENABLE_DISABLE=$1
   if [ "$ENABLE_DISABLE" = 'enable' ]; then

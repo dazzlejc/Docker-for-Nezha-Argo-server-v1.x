@@ -12,21 +12,17 @@ v1版参数设置:
 
 开启节点后可设置变量:SUB_NAME:节点名称;变量CF_IP:优选ip或域名
 
-订阅地址是/uuid，也可以在查看日志中地址
+节点订阅地址是域名/uuid，也可以在日志中查看
 
-#### 2.变量AGENT_VER，可选，指定哪吒客户端版本，不填则使用默认版本
+#### 2.变量DASH_TOKEN,可选，客户端的哪吒key，不填则自动生成
 
-#### 3.变量DASH_VER，可选，指定哪吒服务端版本,不填则使用默认版本
+#### 3.变量API_TOKEN,可选，设置与变量DASH_TOKEN相同值，支持客户端设置节点名称
 
-#### 4.变量DASH_TOKEN,可选，客户端的哪吒key，不填则自动生成
+此功能，需要配合玩具脚本，在客户端设置SUB_NAME为节点名称，则哪吒面板会自动生成相应节点名称。
 
-#### 5.变量API_TOKEN,可选，客户端设置节点名称的token,设置成与上面DASH_TOKEN相同的值
+特别提醒: 名称设置不是立即生效，需要等待1-2分钟才会生效。
 
-这个API_TOKEN功能，需要配合玩具脚本，在客户端设置SUB_NAME为节点名称，则哪吒面板会自动设置名字
-
-小技巧:添加完节点可以手动进本地哪吒输入./backup.sh备份,这样就不会丢失数据
-
-玩具脚本(游戏机,Docker机，VPS通用版本):
+玩具脚本地址(游戏机,Docker机，VPS通用版本):
 ```
 https://github.com/dsadsadsss/java-wanju.git
 ```
@@ -45,7 +41,7 @@ https://github.com/dsadsadsss/java-wanju.git
 | `GH_REPO` | GitHub备份仓库 | 备份需要，不用备份则不填 | 否 | 无 |
 | `DASH_TOKEN` | 客户端使用的哪吒KEY | 即客户端使用的哪吒KEY | 是| 可以使用节点的UUID值 |
 | `API_TOKEN` | 客户端节点设置名字的token | 设置与上面DASH_TOKEN相同的值 | 否|不设置则不支持客户端设置名字 |
-#### docker镜像(默认面板端口80):
+#### docker镜像(PORT设置端口，默认面板端口80):
 ```
 jian27/nezha-v1
 ```
